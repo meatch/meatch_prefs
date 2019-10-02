@@ -127,6 +127,16 @@ if [ $whichSystem = "CTM" ]; then
     ### QuickRez
     function cdqrf   { cd "/home/meatch/Project/Sites/montrose-agent-front-end";    git status; }
     function cdqrb   { cd "/home/meatch/Project/Sites/montrose-agent-back-end";     git status; }
+
+    # Update VS Code
+    function updatevscode {
+        dnf check-update;
+        sudo dnf update code;
+    }
+
+    function gribt() {
+        grib("trip-builder")
+    }
 fi
 
 # #########################
@@ -134,6 +144,7 @@ fi
 # #########################
 alias gst="git status"
 alias gbv="git branch -vva"
+alias gbvg="git branch -vva | grep -i $1"
 alias glo="git log --oneline"
 alias glow="git log --oneline --all --graph --decorate"
 alias gfp="git fetch -p"
@@ -151,6 +162,10 @@ function grhard {
 
 function grebc() {
     git rebase -i HEAD~$1
+}
+
+function grib() {
+    git rebase -i origin/$1
 }
 
 ### Yarn
