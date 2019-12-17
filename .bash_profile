@@ -17,7 +17,7 @@ alias php71="php"
 
 # #########################
 # PATH MANAGEMENT
-# Was duplicting, seems that each new shell triggers this and then adds to it. 
+# Was duplicating, seems that each new shell triggers this and then adds to it. 
 # So on my Mac I added it to ~/.profile which only loads when terminal is first opened.
 # This may break CTM work machine? Perhaps add .profile to home folder of work machine?
 # #########################
@@ -88,7 +88,9 @@ if [ $whichSystem = "CTM" ]; then
     # elasticdock. does not care what dir you are in.
     function elasticdock { docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:5.4.1; }
     # function ctmdock { cd "/home/meatch/Project/"; docker-compose up --build; } DID NOT WORK
-    function ctmdock { cd "/home/meatch/Project/"; docker-compose up; }
+    function ctmdock        { cd "/home/meatch/Project/"; docker-compose up;        }
+    function ctmdockd       { cd "/home/meatch/Project/"; docker-compose down;      }
+    function ctmdockdet     { cd "/home/meatch/Project/"; docker-compose up -d;     }
 
     ### LTR
     function cdnf   { cd "/home/meatch/Project/Sites/ltr-front-end";           git status; }
@@ -136,6 +138,18 @@ if [ $whichSystem = "CTM" ]; then
 
     function gribt() {
         grib("trip-builder")
+    }
+
+    function buildDeploy() {
+        set -x;
+        gfp;
+        gco BUILD-R2N2;
+        git reset --hard origin/R2N2;
+        yarn dev;
+        git add .;
+        NOW=$(date +"%m-%d-%y %T");
+        git commit -m "yarn dev BUILD for UAT testing $NOW";
+        git push -fu origin BUILD-R2N2;
     }
 fi
 
