@@ -24,11 +24,10 @@ alias gac="git add .; git commit"
 alias gamend="git commit --amend --no-edit"
 
 function ecommit {
-    echo '>>>> Start Push Empty Commit to deploy'; 
+    echo '>>>> Start Empty Commit'; 
     set -x;
     git commit --allow-empty -m "Empty commit to push to $1 and trigger post-receive.";
-    git push $1 master;
-    echo '<<<< End Push Empty Commit to deploy';
+    echo '<<<< End Empty Commit';
 }
 
 function grhard {
