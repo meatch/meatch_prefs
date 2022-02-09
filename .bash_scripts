@@ -23,6 +23,14 @@ alias gblame="bash ~/git-branches-by-commit-date.sh"
 alias gac="git add .; git commit"
 alias gamend="git commit --amend --no-edit"
 
+alias gremlocalmerged="for b in `git branch --merged | grep -v \*`; do git branch -D $b; done"
+
+function gremlocalall {
+    echo '>>>> Start Git Remove Local Branches'; 
+    git branch | grep -v "$1" | xargs git branch -D
+    echo '<<<< End Git Remove Local Branches';
+}
+
 function ecommit {
     echo '>>>> Start Empty Commit'; 
     set -x;
