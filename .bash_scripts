@@ -23,17 +23,6 @@ alias gblame="bash ~/git-branches-by-commit-date.sh"
 alias gac="git add .; git commit"
 alias gamend="git commit --amend --no-edit"
 
-# Caused issues in terminal - convert to function?
-# Every new terminal said :: fatal: not a git repository (or any of the parent directories): .git
-# Disabling for now
-# alias gremlocalmerged='for b in `git branch --merged | grep -v \*`; do git branch -D $b; done'
-
-function gremlocalall {
-    echo '>>>> Start Git Remove Local Branches';
-    git branch | grep -v "$1" | xargs git branch -D
-    echo '<<<< End Git Remove Local Branches';
-}
-
 function ecommit {
     echo '>>>> Start Empty Commit';
     set -x;
@@ -50,15 +39,6 @@ function grhard {
     echo '<<<< End clean, reset, and checkout';
 }
 
-function grebc() {
-    git rebase -i HEAD~$1
-}
-
 function grib() {
     git rebase -i origin/$1
 }
-
-### Yarn
-alias yin="yarn install"
-alias yang="yarn watch"
-alias yinyang="yin && yang"
