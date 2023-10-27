@@ -1,7 +1,14 @@
 # VS Code code command
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin:/opt/homebrew/bin"
 
-export PATH=/opt/homebrew/opt/python@3.11/libexec/bin:$PATH
+# Python
+# Native installed Python homebrew
+# export PATH=/opt/homebrew/opt/python@3.11/libexec/bin:$PATH
+# Using pyenv to allow us to switch between versions - this initializes it
+eval "$(pyenv init -)"
+
+# When python 2 is called, we actually want to call installed version of python
+alias python2=“python”
 
 # VS Code code command
 PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
@@ -9,13 +16,24 @@ PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 # Homebrew
 PATH="$PATH:/opt/homebrew/bin"
 
-# Add .NET Core SDK tools
-PATH="$PATH:/Users/meatch/.dotnet/tools"
+# Console Ninja
+PATH="$PATH:/Users/meatch/.console-ninja/.bin"
 
-PATH="$PATH:/usr/local/share/dotnet"
+# postgresql pg_restore and pg_dump
+# PATH="$PATH:/usr/local/opt/libpq/bin"
+
+# Add .NET Core SDK tools
+# PATH="$PATH:/Users/meatch/.dotnet/tools"
+
+# PATH="$PATH:/usr/local/share/dotnet"
 # PATH="$PATH:/usr/local/share/dotnet/x64"
 # export MSBuildSDKsPath="/usr/local/share/dotnet/sdk/6.0.300/Sdks"
-alias dotnet64=/usr/local/share/dotnet/x64/dotnet
+# alias dotnet64=/usr/local/share/dotnet/x64/dotnet
+
+# --------------------------------------------------------------
+# Docker
+# --------------------------------------------------------------
+# export DOCKER_DEFAULT_PLATFORM=linux/amd64
 
 # --------------------------------------------------------------
 # Homebrew Shell Completion
