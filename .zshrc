@@ -1,43 +1,17 @@
-# VS Code code command
-export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin:/opt/homebrew/bin"
-
-# Python
-# Native installed Python homebrew
-# export PATH=/opt/homebrew/opt/python@3.11/libexec/bin:$PATH
-# Using pyenv to allow us to switch between versions - this initializes it
-eval "$(pyenv init -)"
-
-# When python 2 is called, we actually want to call installed version of python
-alias python2=“python”
-
-# VS Code code command
-PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
-
+# --------------------------------------------------------------
+# Managing PATH
+# --------------------------------------------------------------
 # Homebrew
-PATH="$PATH:/opt/homebrew/bin"
+path+=('/opt/homebrew/bin')
+
+# VS Code code command
+path+=('/Applications/Visual Studio Code.app/Contents/Resources/app/bin')
 
 # Console Ninja
-PATH="$PATH:/Users/meatch/.console-ninja/.bin"
-
-# postgresql pg_restore and pg_dump
-# PATH="$PATH:/usr/local/opt/libpq/bin"
-
-# Add .NET Core SDK tools
-# PATH="$PATH:/Users/meatch/.dotnet/tools"
-
-# PATH="$PATH:/usr/local/share/dotnet"
-# PATH="$PATH:/usr/local/share/dotnet/x64"
-# export MSBuildSDKsPath="/usr/local/share/dotnet/sdk/6.0.300/Sdks"
-# alias dotnet64=/usr/local/share/dotnet/x64/dotnet
+path+=('/Users/meatch/.console-ninja/.bin')
 
 # --------------------------------------------------------------
-# Docker
-# --------------------------------------------------------------
-# export DOCKER_DEFAULT_PLATFORM=linux/amd64
-
-# --------------------------------------------------------------
-# Homebrew Shell Completion
-# https://docs.brew.sh/Shell-Completion
+# Homebrew Shell Completion :: https://docs.brew.sh/Shell-Completion
 # --------------------------------------------------------------
 if type brew &>/dev/null
 then
@@ -47,13 +21,31 @@ then
     compinit
 fi
 
-# bash Scripts
-source "$HOME/meatch_prefs/.bash_scripts"
-
+# --------------------------------------------------------------
 # NVM Support
-export NVM_DIR="$HOME/.nvm"
+# --------------------------------------------------------------
+# export NVM_DIR="$HOME/.nvm"
 source $(brew --prefix nvm)/nvm.sh
 
+# --------------------------------------------------------------
+# Python
+# --------------------------------------------------------------
+# Native installed Python homebrew
+# export PATH=/opt/homebrew/opt/python@3.11/libexec/bin:$PATH
+# Using pyenv to allow us to switch between versions - this initializes it
+eval "$(pyenv init -)"
+
+# When python 2 is called, we actually want to call installed version of python
+alias python2="python"
+
+# --------------------------------------------------------------
+# bash Scripts :: Homemaded Methods and Aliases
+# --------------------------------------------------------------
+source "$HOME/meatch_prefs/.bash_scripts"
+
+# --------------------------------------------------------------
+# Zsh Begins here
+# --------------------------------------------------------------
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
