@@ -24,7 +24,7 @@ fi
 # --------------------------------------------------------------
 # NVM Support
 # --------------------------------------------------------------
-# export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="$HOME/.nvm"
 source $(brew --prefix nvm)/nvm.sh
 
 # --------------------------------------------------------------
@@ -146,3 +146,29 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # source /Users/meatch/.docker/init-zsh.sh || true # Added by Docker Desktop
+
+
+# --------------------------------------------------------------
+# NVMRC: This little ditty will run nvm use and change to Node Version of choice
+# assuming there is an .nvmrc file in root of project that speifies node version (e.g v20)
+# --------------------------------------------------------------
+autoload -U add-zsh-hook
+load-nvmrc() {
+    local node_version="$(nvm version)"
+    local nvmrc_path="$(nvm_find_nvmrc)"
+
+    if [ -n "$nvmrc_path" ]; then
+        local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+
+        if [ "$nvmrc_node_version" = "N/A" ]; then
+        nvm install
+        elif [ "$nvmrc_node_version" != "$node_version" ]; then
+        nvm use
+        fi
+    elif [ "$node_version" != "$(nvm version default)" ]; then
+        echo "Reverting to nvm default version"
+        nvm use default
+    fi
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrc
