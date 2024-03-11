@@ -1,3 +1,6 @@
+# VS Code code command
+export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin:/opt/homebrew/bin"
+
 # --------------------------------------------------------------
 # Managing PATH
 # --------------------------------------------------------------
@@ -26,6 +29,12 @@ fi
 # --------------------------------------------------------------
 export NVM_DIR="$HOME/.nvm"
 source $(brew --prefix nvm)/nvm.sh
+
+
+# --------------------------------------------------------------
+# Node ::  TODO for Node v20 TNP
+# --------------------------------------------------------------
+# export NODE_OPTIONS=--openssl-legacy-provider
 
 # --------------------------------------------------------------
 # Python
@@ -172,3 +181,5 @@ load-nvmrc() {
 }
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
+
+PATH=~/.console-ninja/.bin:$PATH

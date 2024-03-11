@@ -19,16 +19,6 @@ alias gbvb="git for-each-ref --format='%(color:cyan)%(authordate:format:%m/%d/%Y
 alias glo="git log --oneline"
 alias glow="git log --oneline --all --graph --decorate"
 alias gfp="git fetch -p"
-alias gblame="bash ~/git-branches-by-commit-date.sh"
-alias gac="git add .; git commit"
-alias gamend="git commit --amend --no-edit"
-
-function ecommit {
-    echo '>>>> Start Empty Commit';
-    set -x;
-    git commit --allow-empty -m "Empty commit to push to $1 and trigger post-receive.";
-    echo '<<<< End Empty Commit';
-}
 
 function grhard {
     echo '>>>> Start clean, reset, and checkout';
