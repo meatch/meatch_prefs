@@ -30,9 +30,9 @@ fi
 export NVM_DIR="$HOME/.nvm"
 source $(brew --prefix nvm)/nvm.sh
 
-
 # --------------------------------------------------------------
-# Node ::  TODO for Node v20 TNP
+# TNP: Node v20 :: This apparently is needed for Storybook to work in Node v20
+# Already added to package.json for the storybook commands, so this should no longer be necessary.
 # --------------------------------------------------------------
 # export NODE_OPTIONS=--openssl-legacy-provider
 
@@ -181,5 +181,3 @@ load-nvmrc() {
 }
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
-
-PATH=~/.console-ninja/.bin:$PATH
