@@ -33,3 +33,26 @@ function grhard {
 function grib() {
     git rebase -i origin/$1
 }
+
+# --------------------------------------------------------------
+# TNP
+# --------------------------------------------------------------
+function tnpRebuild() {
+    docker stop noun-www-1 noun-webpack-1
+    docker compose build www
+    docker compose up -d www webpack
+}
+
+function tnpRebuildAll() {
+    docker compose down
+    docker compose up -d --build
+}
+
+function tnpRestart() {
+    docker compose down www webpack
+    docker compose up -d www webpack
+}
+
+function tnpRestartAll() {
+    docker compose restart
+}
