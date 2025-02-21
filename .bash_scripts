@@ -56,3 +56,7 @@ function tnpRestart() {
 function tnpRestartAll() {
     docker compose restart
 }
+
+function tnpTestUpdates() {
+    yarn run jest:update
+}
