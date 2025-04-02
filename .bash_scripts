@@ -58,5 +58,5 @@ function tnpRestartAll() {
 }
 
 function tnpTestUpdates() {
-    yarn run jest:update
+    docker exec -it noun-www-1 bash -c "yarn jest:update"
 }
