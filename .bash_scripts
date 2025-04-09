@@ -60,10 +60,10 @@ function tnpRestartAll() {
 function tnpTest() {
     if [ -z "$1" ]; then
         # If no argument is passed, run the TNP Jest Test Updates - updates snapshots along the way
-        docker exec -it noun-www-1 bash -c "yarn jest:update"
+        docker compose exec www bash -c "yarn jest:update"
     else
         # If an argument is passed, run jest test on file relative to www root
         local test_file="$1"
-        docker exec -it noun-www-1 bash -c "yarn run jest -i $test_file"
+        docker compose exec www bash -c "yarn run jest -i $test_file"
     fi
 }
