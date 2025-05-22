@@ -49,8 +49,8 @@ function tnpRebuildAll() {
 }
 
 function tnpRestart() {
-    docker compose down www webpack
-    docker compose up -d www webpack
+    docker compose down www webpack nginx
+    docker compose up -d www webpack nginx
 }
 
 function tnpRestartAll() {
