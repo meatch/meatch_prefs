@@ -58,17 +58,23 @@ function tnpRestartAll() {
 }
 
 function tnpTest() {
-    if [ -z "$1" ]; then
+    local test_file="$1"
+    local test_name="$2"
+    local update_flag=""
+
+    # Handle optional third argument for snapshot updating
+    if [ "$3" = "update" ]; then
+        update_flag="--updateSnapshot"
+    fi
+
+    if [ -z "$test_file" ]; then
         # No arguments — run all tests with snapshot updates
         docker compose exec www bash -c "yarn jest:update"
-    elif [ -z "$2" ]; then
+    elif [ -z "$test_name" ]; then
         # One argument — run the full test file
-        local test_file="$1"
-        docker compose exec www bash -c "yarn run jest -i $test_file"
+        docker compose exec www bash -c "yarn run jest -i \"$test_file\" $update_flag"
     else
         # Two arguments — run a specific test within the test file
-        local test_file="$1"
-        local test_name="$2"
-        docker compose exec www bash -c "yarn run jest -i \"$test_file\" -t \"$test_name\""
+        docker compose exec www bash -c "yarn run jest -i \"$test_file\" -t \"$test_name\" $update_flag"
     fi
 }
