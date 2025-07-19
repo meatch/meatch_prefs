@@ -34,6 +34,10 @@ function grib() {
     git rebase -i origin/$1
 }
 
+function dockerPruneAll() {
+    bash '/Volumes/MeatchPod/WEBWORKS/Dev Library/Tools/docker-tools/scripts/docker-prune-all.sh'
+}
+
 # --------------------------------------------------------------
 # TNP
 # --------------------------------------------------------------
