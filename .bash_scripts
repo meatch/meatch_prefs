@@ -83,6 +83,54 @@ function tnpTest() {
     fi
 }
 
+
+# This will evaluate our python files to make sure they conform to linters
+# will also reformat for us, so no guesswork
+# great to avoid complications on gtihub actions (CICD) python linter checks
+function tnpBlackCheck() {
+    # Usage:
+    #   blackCheck                      # check entire repo (like CI)
+    #   blackCheck noun_project/...py   # check a specific file or directory
+    local target="${1:-.}"
+
+    echo ">>> Running Black check for: $target"
+
+    # Try inside Docker container first
+    if docker ps --format '{{.Names}}' | grep -qx "noun-www-1"; then
+        # Ensure black exists in the container
+        if docker exec noun-www-1 sh -lc 'command -v black >/dev/null 2>&1'; then
+            # Try common app roots inside container and pick the first that matches
+            local bases=("/app" "/usr/src/app" "/workspace" "")
+            local base
+            for base in "${bases[@]}"; do
+                if docker exec noun-www-1 sh -lc "[ -e '${base}/${target}' ] || [ '${target}' = '.' ]"; then
+                    echo "(container) black --check --diff ${base:+(cd $base && )}$target"
+                    if [ -n "$base" ] && [ "$target" != "." ]; then
+                        docker exec -it noun-www-1 sh -lc "cd '$base' && black --version && black --check --diff '$target'"
+                    elif [ -n "$base" ] && [ "$target" = "." ]; then
+                        docker exec -it noun-www-1 sh -lc "cd '$base' && black --version && black --check --diff ."
+                    else
+                        docker exec -it noun-www-1 sh -lc "black --version && black --check --diff '$target'"
+                    fi
+                    return $?
+                fi
+            done
+        else
+            echo "NOTE: 'black' not found inside container noun-www-1; falling back to local."
+        fi
+    fi
+
+    # Fallback: run locally
+    if command -v black >/dev/null 2>&1; then
+        black --version
+        black --check --diff "$target"
+    else
+        echo "ERROR: 'black' not found locally or in container. Install with: pip install black"
+        return 127
+    fi
+}
+
+
 function tnpGitAuth() {
     # Consolidated TNP SSH/Git auth helper
     # Usage:
