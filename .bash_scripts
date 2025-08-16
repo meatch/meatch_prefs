@@ -83,35 +83,54 @@ function tnpTest() {
     fi
 }
 
-function tnpResetGit() {
-    echo ">>> Ensuring correct SSH key for github-tnp..."
+function tnpGitAuth() {
+    # Consolidated TNP SSH/Git auth helper
+    # Usage:
+    #   tnpGitAuth           # clear agent, add TNP key, test SSH, fix remote if needed
+    #   tnpGitAuth keep      # keep existing keys loaded, still ensure TNP key is present
 
-    # Check if the tnp key is already loaded
-    ssh-add -l | grep 'tnp/id_rsa' > /dev/null
-    if [ $? -ne 0 ]; then
-        echo "Loading ~/.ssh/tnp/id_rsa into SSH agent..."
-        ssh-add ~/.ssh/tnp/id_rsa
+    local key="$HOME/.ssh/tnp/tnp_mitchtnp_id_rsa"
+    local clear="${1:-clear}"
+
+    echo ">>> TNP Git auth: ensuring correct key and host alias"
+
+    # Optionally clear agent to avoid wrong key being attempted first
+    if [ "$clear" != "keep" ]; then
+        echo "Clearing keys from ssh-agent..."
+        ssh-add -D >/dev/null 2>&1 || true
+    fi
+
+    # Add the intended key if not already loaded
+    if ! ssh-add -l 2>/dev/null | grep -q "tnp_mitchtnp_id_rsa"; then
+        echo "Adding $key to ssh-agent..."
+        ssh-add "$key"
     else
-        echo "TNP key already loaded in SSH agent."
+        echo "Key already loaded: $key"
+    fi
+
+    # Sanity-check that ~/.ssh/config maps github-tnp -> correct identity
+    echo "Checking ssh config for host 'github-tnp'..."
+    if ! ssh -G github-tnp 2>/dev/null | grep -qi "^identityfile .*tnp_mitchtnp_id_rsa"; then
+        echo "WARNING: 'github-tnp' in ~/.ssh/config may not point to $key"
+        echo "Add this block to ~/.ssh/config if needed:"
+        echo "Host github-tnp\n  HostName github.com\n  User git\n  IdentityFile ~/.ssh/tnp/tnp_mitchtnp_id_rsa\n  IdentitiesOnly yes\n  AddKeysToAgent yes\n  UseKeychain yes"
     fi
 
     echo ">>> Testing SSH connection to github-tnp..."
-    ssh -T git@github-tnp
-}
+    # Do not fail the whole function if the banner check exits non-zero
+    ssh -T git@github-tnp || true
 
-function resetSshKeys() {
-    echo ">>> Resetting SSH keys in preferred order..."
+    # If inside a git repo, ensure origin uses the host alias instead of github.com
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        local current_url
+        current_url=$(git remote get-url origin 2>/dev/null || echo "")
+        if [[ "$current_url" == git@github.com:* ]]; then
+            local path="${current_url#git@github.com:}"
+            echo ">>> Updating 'origin' to use host alias github-tnp..."
+            git remote set-url origin "git@github-tnp:$path"
+            git remote -v
+        fi
+    fi
 
-    # Load TNP key first to ensure it's offered to GitHub before the default personal key
-    echo "Loading ~/.ssh/tnp/tnp_mitchtnp_id_rsa (TNP)..."
-    ssh-add ~/.ssh/tnp/tnp_mitchtnp_id_rsa
-
-    echo "Loading ~/.ssh/enspyred/id_rsa..."
-    ssh-add ~/.ssh/enspyred/id_rsa
-
-    echo "Loading ~/.ssh/id_rsa (default personal key)..."
-    ssh-add ~/.ssh/id_rsa
-
-    echo ">>> SSH keys added. Current agent keys:"
-    ssh-add -l
+    echo "<<< Done"
 }
