@@ -181,3 +181,9 @@ load-nvmrc() {
 }
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
+
+# --------------------------------------------------------------
+# Python Path
+# --------------------------------------------------------------
+. "$HOME/.local/bin/env"
+export PATH="$HOME/Library/Python/3.9/bin:$PATH"
