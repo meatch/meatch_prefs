@@ -182,3 +182,7 @@ function tnpGitAuth() {
 
     echo "<<< Done"
 }
+
+function tnpNextLogs() {
+    docker exec -it noun-www-1 pm2 logs --lines 100
+}
