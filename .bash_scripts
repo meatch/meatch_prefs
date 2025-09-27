@@ -42,14 +42,17 @@ function dockerPruneAll() {
 # TNP
 # --------------------------------------------------------------
 function tnpRebuild() {
-    docker stop noun-www-1 noun-webpack-1
+    docker compose rm -f www webpack
     docker compose build www
-    docker compose up -d www webpack
+    docker compose up -d --no-deps --force-recreate www
+    docker compose up -d --no-deps --force-recreate webpack
+    docker compose exec nginx nginx -s reload || docker compose restart nginx
 }
 
 function tnpRebuildAll() {
     docker compose down
-    docker compose up -d --build
+    docker compose build
+    docker compose up -d --no-deps --force-recreate
 }
 
 function tnpRestart() {
