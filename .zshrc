@@ -7,6 +7,11 @@ export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/b
 # Homebrew
 path+=('/opt/homebrew/bin')
 
+# Ensure Homebrew environment is set (Apple Silicon)
+if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
 # VS Code code command
 path+=('/Applications/Visual Studio Code.app/Contents/Resources/app/bin')
 
@@ -28,7 +33,10 @@ fi
 # NVM Support
 # --------------------------------------------------------------
 export NVM_DIR="$HOME/.nvm"
-source $(brew --prefix nvm)/nvm.sh
+if command -v brew >/dev/null 2>&1; then
+    NVM_SH="$(brew --prefix nvm 2>/dev/null)/nvm.sh"
+    [ -s "$NVM_SH" ] && . "$NVM_SH"
+fi
 
 # --------------------------------------------------------------
 # TNP: Node v20 :: This apparently is needed for Storybook to work in Node v20
@@ -42,7 +50,9 @@ source $(brew --prefix nvm)/nvm.sh
 # Native installed Python homebrew
 # export PATH=/opt/homebrew/opt/python@3.11/libexec/bin:$PATH
 # Using pyenv to allow us to switch between versions - this initializes it
-eval "$(pyenv init -)"
+if command -v pyenv >/dev/null 2>&1; then
+    eval "$(pyenv init - zsh)"
+fi
 
 # When python 2 is called, we actually want to call installed version of python
 alias python2="python"
@@ -161,6 +171,7 @@ source $ZSH/oh-my-zsh.sh
 # NVMRC: This little ditty will run nvm use and change to Node Version of choice
 # assuming there is an .nvmrc file in root of project that speifies node version (e.g v20)
 # --------------------------------------------------------------
+if command -v nvm >/dev/null 2>&1; then
 autoload -U add-zsh-hook
 load-nvmrc() {
     local node_version="$(nvm version)"
@@ -181,9 +192,10 @@ load-nvmrc() {
 }
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
+fi
 
 # --------------------------------------------------------------
 # Python Path
 # --------------------------------------------------------------
-. "$HOME/.local/bin/env"
+export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
