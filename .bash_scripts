@@ -42,8 +42,8 @@ function dockerPruneAll() {
 # TNP
 # --------------------------------------------------------------
 function tnpRebuild() {
-    docker compose rm -f www webpack
-    docker compose build www
+    docker compose rm -f www webpack nginx
+    docker compose build www nginx
     docker compose up -d --no-deps --force-recreate www
     docker compose up -d --no-deps --force-recreate webpack
     docker compose exec nginx nginx -s reload || docker compose restart nginx
@@ -61,7 +61,8 @@ function tnpRestart() {
 }
 
 function tnpRestartAll() {
-    docker compose restart
+    docker compose down
+    docker compose up -d
 }
 
 function tnpTest() {
@@ -92,11 +93,22 @@ function tnpTest() {
 # great to avoid complications on gtihub actions (CICD) python linter checks
 function tnpBlackCheck() {
     # Usage:
-    #   blackCheck                      # check entire repo (like CI)
-    #   blackCheck noun_project/...py   # check a specific file or directory
+    #   tnpBlackCheck                      # check entire repo (like CI)
+    #   tnpBlackCheck noun_project/...py   # check a specific file or directory
+    #   tnpBlackCheck . apply              # apply formatting fixes to entire repo
+    #   tnpBlackCheck some/file.py apply   # apply formatting to specific file
     local target="${1:-.}"
+    local mode="${2:-check}"  # 'check' or 'apply'
 
-    echo ">>> Running Black check for: $target"
+    # Determine black flags based on mode
+    local black_flags
+    if [ "$mode" = "apply" ]; then
+        black_flags=""  # Just format, no --check
+        echo ">>> Running Black (APPLY MODE) for: $target"
+    else
+        black_flags="--check --diff"
+        echo ">>> Running Black (CHECK MODE) for: $target"
+    fi
 
     # Try inside Docker container first
     if docker ps --format '{{.Names}}' | grep -qx "noun-www-1"; then
@@ -107,13 +119,13 @@ function tnpBlackCheck() {
             local base
             for base in "${bases[@]}"; do
                 if docker exec noun-www-1 sh -lc "[ -e '${base}/${target}' ] || [ '${target}' = '.' ]"; then
-                    echo "(container) black --check --diff ${base:+(cd $base && )}$target"
+                    echo "(container) black $black_flags ${base:+(cd $base && )}$target"
                     if [ -n "$base" ] && [ "$target" != "." ]; then
-                        docker exec -it noun-www-1 sh -lc "cd '$base' && black --version && black --check --diff '$target'"
+                        docker exec -it noun-www-1 sh -lc "cd '$base' && black --version && black $black_flags '$target'"
                     elif [ -n "$base" ] && [ "$target" = "." ]; then
-                        docker exec -it noun-www-1 sh -lc "cd '$base' && black --version && black --check --diff ."
+                        docker exec -it noun-www-1 sh -lc "cd '$base' && black --version && black $black_flags ."
                     else
-                        docker exec -it noun-www-1 sh -lc "black --version && black --check --diff '$target'"
+                        docker exec -it noun-www-1 sh -lc "black --version && black $black_flags '$target'"
                     fi
                     return $?
                 fi
@@ -126,7 +138,7 @@ function tnpBlackCheck() {
     # Fallback: run locally
     if command -v black >/dev/null 2>&1; then
         black --version
-        black --check --diff "$target"
+        black $black_flags "$target"
     else
         echo "ERROR: 'black' not found locally or in container. Install with: pip install black"
         return 127
