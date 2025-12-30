@@ -15,9 +15,6 @@ fi
 # VS Code code command
 path+=('/Applications/Visual Studio Code.app/Contents/Resources/app/bin')
 
-# Console Ninja
-path+=('/Users/meatch/.console-ninja/.bin')
-
 # --------------------------------------------------------------
 # Homebrew Shell Completion :: https://docs.brew.sh/Shell-Completion
 # --------------------------------------------------------------
@@ -199,3 +196,4 @@ fi
 # --------------------------------------------------------------
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
