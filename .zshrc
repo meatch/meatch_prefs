@@ -1,19 +1,24 @@
+# Enable or disable startup time logging
+ENABLE_STARTUP_LOGGING=true
+HIST_STAMPS="%Y.%m.%d.%H:%M"
+
+# Record the start time
+if [ "$ENABLE_STARTUP_LOGGING" = true ]; then
+    ZSH_START_TIME=$(date +%s%N)
+fi
+
 # VS Code code command
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin:/opt/homebrew/bin"
 
 # --------------------------------------------------------------
-# Managing PATH
+# PATH Management (Consolidated)
 # --------------------------------------------------------------
-# Homebrew
-path+=('/opt/homebrew/bin')
+export PATH="/opt/homebrew/bin:/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$HOME/.local/bin:$HOME/Library/Python/3.9/bin:$PATH"
 
 # Ensure Homebrew environment is set (Apple Silicon)
 if [ -x /opt/homebrew/bin/brew ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
-
-# VS Code code command
-path+=('/Applications/Visual Studio Code.app/Contents/Resources/app/bin')
 
 # --------------------------------------------------------------
 # Homebrew Shell Completion :: https://docs.brew.sh/Shell-Completion
@@ -21,7 +26,6 @@ path+=('/Applications/Visual Studio Code.app/Contents/Resources/app/bin')
 if type brew &>/dev/null
 then
     FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-
     autoload -Uz compinit
     compinit
 fi
@@ -42,7 +46,7 @@ fi
 # export NODE_OPTIONS=--openssl-legacy-provider
 
 # --------------------------------------------------------------
-# Python
+# Python Initialization
 # --------------------------------------------------------------
 # Native installed Python homebrew
 # export PATH=/opt/homebrew/opt/python@3.11/libexec/bin:$PATH
@@ -55,12 +59,21 @@ fi
 alias python2="python"
 
 # --------------------------------------------------------------
-# bash Scripts :: Homemaded Methods and Aliases
+# bash Scripts :: Custom Methods and Aliases
 # --------------------------------------------------------------
 source "$HOME/meatch_prefs/.bash_scripts"
 
 # --------------------------------------------------------------
-# Zsh Begins here
+# Startup Time Logging
+# --------------------------------------------------------------
+if [ "$ENABLE_STARTUP_LOGGING" = true ]; then
+    ZSH_END_TIME=$(date +%s%N)
+    ZSH_STARTUP_DURATION=$(( (ZSH_END_TIME - ZSH_START_TIME) / 1000000 )) # Convert nanoseconds to milliseconds
+    echo "[Startup Time]: $((ZSH_STARTUP_DURATION / 1000)).$((ZSH_STARTUP_DURATION % 1000)) seconds"
+fi
+
+# --------------------------------------------------------------
+# Oh My Zsh Configuration
 # --------------------------------------------------------------
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -131,7 +144,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git docker docker-compose node npm vscode fzf z history-substring-search zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -197,3 +210,9 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+# --------------------------------------------------------------
+# Zsh PLugins
+# --------------------------------------------------------------
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
