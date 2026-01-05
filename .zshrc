@@ -78,9 +78,6 @@ ZSH_THEME="robbyrussell"
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
-# Load Oh My Zsh
-source $ZSH/oh-my-zsh.sh
-
 # --------------------------------------------------------------
 # Plugins
 # --------------------------------------------------------------
@@ -90,6 +87,10 @@ source $ZSH/oh-my-zsh.sh
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git docker docker-compose node npm vscode fzf z history-substring-search zsh-autosuggestions zsh-syntax-highlighting)
+
+# Load Oh My Zsh
+source $ZSH/oh-my-zsh.sh
+[ "$ENABLE_DETAILED_PROFILING" = true ] && profile_checkpoint "Oh My Zsh + all plugins"
 
 # User configuration
 
