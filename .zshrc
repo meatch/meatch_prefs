@@ -99,7 +99,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git docker docker-compose node npm vscode fzf z history-substring-search zsh-autosuggestions zsh-syntax-highlighting)
+plugins=(git docker docker-compose node npm vscode history-substring-search zsh-autosuggestions zsh-syntax-highlighting)
 
 # Load Oh My Zsh
 source $ZSH/oh-my-zsh.sh

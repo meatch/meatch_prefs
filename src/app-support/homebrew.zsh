@@ -9,10 +9,8 @@ if [ -x /opt/homebrew/bin/brew ]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
-# Homebrew Shell Completion :: https://docs.brew.sh/Shell-Completion
-if type brew &>/dev/null
-then
+# Homebrew completions are handled by Oh My Zsh
+# Just add the FPATH - Oh My Zsh will call compinit for us
+if type brew &>/dev/null; then
     FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-    autoload -Uz compinit
-    compinit
 fi
