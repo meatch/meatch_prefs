@@ -2,10 +2,23 @@
 # Startup Time Logging: Start
 # --------------------------------------------------------------
 # Enable or disable startup time logging
-ENABLE_STARTUP_LOGGING=true
+ENABLE_STARTUP_LOGGING=false
+ENABLE_DETAILED_PROFILING=false
 
 if [ "$ENABLE_STARTUP_LOGGING" = true ]; then
     ZSH_START_TIME=$(date +%s%N)
+
+    # Helper function for profiling
+    if [ "$ENABLE_DETAILED_PROFILING" = true ]; then
+        profile_checkpoint() {
+            local checkpoint_name="$1"
+            local current_time=$(date +%s%N)
+            local duration=$(( (current_time - ZSH_LAST_CHECKPOINT) / 1000000 ))
+            printf "  %-40s %6d ms\n" "$checkpoint_name:" "$duration"
+            ZSH_LAST_CHECKPOINT=$current_time
+        }
+        ZSH_LAST_CHECKPOINT=$ZSH_START_TIME
+    fi
 fi
 
 # Timestamp History Prefix Formatting
@@ -122,12 +135,15 @@ source $ZSH/oh-my-zsh.sh
 # FZF - Fuzzy Finder Zsh Plugin
 # --------------------------------------------------------------
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+[ "$ENABLE_DETAILED_PROFILING" = true ] && profile_checkpoint "FZF"
 
 # --------------------------------------------------------------
 # Source by concern
 # --------------------------------------------------------------
 source "$HOME/meatch_prefs/src/app-support/index.zsh"
+[ "$ENABLE_DETAILED_PROFILING" = true ] && profile_checkpoint "app-support/index.zsh"
 source "$HOME/meatch_prefs/src/tnp.zsh"
+[ "$ENABLE_DETAILED_PROFILING" = true ] && profile_checkpoint "tnp.zsh"
 
 # --------------------------------------------------------------
 # Startup Time Logging: End
