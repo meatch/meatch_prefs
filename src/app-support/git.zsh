@@ -31,9 +31,16 @@ review-branch() {
         return 1
     fi
 
-    # Fetch latest changes
+    # Fetch latest changes (keep base ref in sync with what GitHub PR uses)
     echo "🔄 Fetching latest from origin..."
-    git fetch origin
+    git fetch origin --prune
+
+    # GitHub PR 'Files changed' is effectively: diff( merge-base(base, head), head )
+    local merge_base=$(git merge-base "$base_branch" "$feature_branch")
+    if [ -z "$merge_base" ]; then
+        echo "❌ Could not determine merge-base between: $base_branch and $feature_branch"
+        return 1
+    fi
 
     # Generate filename: origin-my-feature-origin-main-2026.01.12-14.56.33.diff.txt
     local timestamp=$(date +"%Y.%m.%d-%H.%M.%S")
@@ -50,17 +57,18 @@ review-branch() {
         echo "=== CODE REVIEW DIFF ==="
         echo "Feature Branch: ${feature_branch}"
         echo "Base Branch: ${base_branch}"
+        echo "Merge Base: ${merge_base}"
         echo "Generated: $(date)"
         echo "Repository: $(basename $(git rev-parse --show-toplevel))"
         echo ""
         echo "=== COMMITS (unique to feature branch) ==="
-        git log ${base_branch}..${feature_branch} --oneline
+        git log ${merge_base}..${feature_branch} --oneline
         echo ""
         echo "=== FILE STATISTICS ==="
-        git diff ${base_branch}...${feature_branch} --stat
+        git diff ${merge_base}..${feature_branch} --stat
         echo ""
         echo "=== FULL DIFF ==="
-        git diff ${base_branch}...${feature_branch}
+        git diff ${merge_base}..${feature_branch}
     } > "$filepath"
 
     echo "✅ Code review diff saved to:"
