@@ -21,68 +21,71 @@ function grib() {
 #   review-branch origin/my-feature
 #   review-branch origin/my-feature origin/develop
 review-branch() {
-    local feature_branch="${1}"
+    local feature_branch="$1"
     local base_branch="${2:-origin/main}"
 
     if [ -z "$feature_branch" ]; then
         echo "❌ Usage: review-branch <feature-branch> [base-branch]"
         echo "   Example: review-branch origin/my-feature"
-        echo "   Example: review-branch origin/my-feature origin/develop"
         return 1
     fi
 
-    # Fetch latest changes (keep base ref in sync with what GitHub PR uses)
     echo "🔄 Fetching latest from origin..."
-    git fetch origin --prune
+    git fetch origin --prune || return 1
 
-    # GitHub PR 'Files changed' is effectively: diff( merge-base(base, head), head )
-    local merge_base=$(git merge-base "$base_branch" "$feature_branch")
-    if [ -z "$merge_base" ]; then
-        echo "❌ Could not determine merge-base between: $base_branch and $feature_branch"
+    if ! git rev-parse --verify "$feature_branch" >/dev/null 2>&1; then
+        echo "❌ Feature branch not found: $feature_branch"
         return 1
     fi
 
-    # Generate filename: origin-my-feature-origin-main-2026.01.12-14.56.33.diff.txt
-    local timestamp=$(date +"%Y.%m.%d-%H.%M.%S")
-    local feature_clean=$(echo "$feature_branch" | sed 's/\//-/g')
-    local base_clean=$(echo "$base_branch" | sed 's/\//-/g')
-    local filename="${feature_clean}-${base_clean}-${timestamp}.diff.txt"
+    if ! git rev-parse --verify "$base_branch" >/dev/null 2>&1; then
+        echo "❌ Base branch not found: $base_branch"
+        return 1
+    fi
+
+    local original_branch
+    original_branch=$(git symbolic-ref --short HEAD)
+
+    echo "📍 Current branch: $original_branch"
+    echo "🔁 Checking out feature branch: $feature_branch"
+    git checkout "$feature_branch" || return 1
+
+    echo "🧼 Rebasing $feature_branch onto $base_branch..."
+    git rebase "$base_branch" || {
+        echo "❌ Rebase failed — aborting."
+        git rebase --abort
+        git checkout "$original_branch"
+        return 1
+    }
+
+    local timestamp
+    timestamp=$(date +"%Y.%m.%d-%H.%M.%S")
+
+    local feature_clean
+    feature_clean=$(echo "$feature_branch" | sed 's/\//-/g')
+
+    local base_clean
+    base_clean=$(echo "$base_branch" | sed 's/\//-/g')
+
+    local filename="${feature_clean}-PR-clean-${timestamp}.diff.txt"
     local filepath="$HOME/Desktop/${filename}"
 
-    echo "📝 Generating code review diff..."
-    echo ""
+    echo "📝 Generating PR-clean diff..."
+    git diff "$base_branch"..HEAD > "$filepath"
 
-    # Create diff file with structured sections
-    {
-        echo "=== CODE REVIEW DIFF ==="
-        echo "Feature Branch: ${feature_branch}"
-        echo "Base Branch: ${base_branch}"
-        echo "Merge Base: ${merge_base}"
-        echo "Generated: $(date)"
-        echo "Repository: $(basename $(git rev-parse --show-toplevel))"
-        echo ""
-        echo "=== COMMITS (unique to feature branch) ==="
-        git log ${merge_base}..${feature_branch} --oneline
-        echo ""
-        echo "=== FILE STATISTICS ==="
-        git diff ${merge_base}..${feature_branch} --stat
-        echo ""
-        echo "=== FULL DIFF ==="
-        git diff ${merge_base}..${feature_branch}
-    } > "$filepath"
+    echo "↩️  Returning to original branch: $original_branch"
+    git checkout "$original_branch" || return 1
 
-    echo "✅ Code review diff saved to:"
-    echo "   ${filepath}"
+    echo "🗑️  Deleting local feature branch copy..."
+    git branch -D "$feature_branch" >/dev/null 2>&1 || true
+
+    echo "📂 Opening diff in VS Code..."
+    code "$filepath"
+
     echo ""
-    echo "📋 File copied to clipboard!"
-    echo "$filepath" | pbcopy
-    echo ""
-    echo "💡 Next steps:"
-    echo "   1. Open Claude Code in this repo"
-    echo "   2. Paste the path (already in clipboard)"
-    echo "   3. Say: 'Review this code review diff in ask mode'"
+    echo "✅ PR-clean diff generated:"
+    echo "   $filepath"
 }
-
 
 
 # Aliases
