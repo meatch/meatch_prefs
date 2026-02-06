@@ -47,8 +47,12 @@ review-branch() {
     original_branch=$(git symbolic-ref --short HEAD)
 
     echo "📍 Current branch: $original_branch"
-    echo "🔁 Checking out feature branch: $feature_branch"
-    git checkout "$feature_branch" || return 1
+    if [ "$original_branch" = "$feature_branch" ]; then
+        echo "✅ Already on $feature_branch"
+    else
+        echo "🔁 Checking out feature branch: $feature_branch"
+        git checkout "$feature_branch" || return 1
+    fi
 
     echo "🧼 Rebasing $feature_branch onto $base_branch..."
     git rebase "$base_branch" || {
@@ -72,12 +76,6 @@ review-branch() {
 
     echo "📝 Generating PR-clean diff..."
     git diff "$base_branch"..HEAD > "$filepath"
-
-    echo "↩️  Returning to original branch: $original_branch"
-    git checkout "$original_branch" || return 1
-
-    echo "🗑️  Deleting local feature branch copy..."
-    git branch -D "$feature_branch" >/dev/null 2>&1 || true
 
     echo "📂 Opening diff in VS Code..."
     code "$filepath"
