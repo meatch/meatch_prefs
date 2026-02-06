@@ -57,17 +57,21 @@ review-branch() {
         branch="$original_branch"
     fi
 
-    if ! git rev-parse --verify "$branch" >/dev/null 2>&1; then
+    # Normalize: strip origin/ prefix for local checkout
+    local local_branch="${branch#origin/}"
+
+    # Validate the remote ref exists
+    if ! git rev-parse --verify "origin/$local_branch" >/dev/null 2>&1; then
         echo "❌ Branch not found: $branch"
         return 1
     fi
 
     echo "📍 Current branch: $original_branch"
-    if [ "$original_branch" = "$branch" ]; then
-        echo "✅ Already on $branch"
+    if [ "$original_branch" = "$local_branch" ]; then
+        echo "✅ Already on $local_branch"
     else
-        echo "🔁 Checking out branch: $branch"
-        git checkout "$branch" || return 1
+        echo "🔁 Checking out branch: $local_branch"
+        git checkout "$local_branch" || return 1
     fi
 
     # Rebase only if --merge-to-branch is provided
