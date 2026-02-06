@@ -16,66 +16,91 @@ function grib() {
 }
 
 # Code review helper - generates diff file for Claude Code review
-# Usage: review-branch <feature-branch> [base-branch]
+# Usage: review-branch [--branch <branch>] [--merge-to-branch <branch>]
+# Options:
+#   --branch          Branch to review (default: current branch)
+#   --merge-to-branch   Rebase onto this branch before diffing (skipped if not provided)
 # Examples:
-#   review-branch origin/my-feature
-#   review-branch origin/my-feature origin/develop
+#   review-branch
+#   review-branch --branch origin/my-feature
+#   review-branch --branch origin/my-feature --merge-to-branch origin/main
 review-branch() {
-    local feature_branch="$1"
-    local base_branch="${2:-origin/main}"
+    local branch=""
+    local merge_to_branch=""
 
-    if [ -z "$feature_branch" ]; then
-        echo "❌ Usage: review-branch <feature-branch> [base-branch]"
-        echo "   Example: review-branch origin/my-feature"
-        return 1
-    fi
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --branch)
+                branch="$2"
+                shift 2
+                ;;
+            --merge-to-branch)
+                merge_to_branch="$2"
+                shift 2
+                ;;
+            *)
+                echo "❌ Unknown option: $1"
+                echo "   Usage: review-branch [--branch <branch>] [--merge-to-branch <branch>]"
+                return 1
+                ;;
+        esac
+    done
 
     echo "🔄 Fetching latest from origin..."
     git fetch origin --prune || return 1
 
-    if ! git rev-parse --verify "$feature_branch" >/dev/null 2>&1; then
-        echo "❌ Feature branch not found: $feature_branch"
-        return 1
-    fi
-
-    if ! git rev-parse --verify "$base_branch" >/dev/null 2>&1; then
-        echo "❌ Base branch not found: $base_branch"
-        return 1
-    fi
-
     local original_branch
     original_branch=$(git symbolic-ref --short HEAD)
 
-    echo "📍 Current branch: $original_branch"
-    if [ "$original_branch" = "$feature_branch" ]; then
-        echo "✅ Already on $feature_branch"
-    else
-        echo "🔁 Checking out feature branch: $feature_branch"
-        git checkout "$feature_branch" || return 1
+    # Default to current branch
+    if [ -z "$branch" ]; then
+        branch="$original_branch"
     fi
 
-    echo "🧼 Rebasing $feature_branch onto $base_branch..."
-    git rebase "$base_branch" || {
-        echo "❌ Rebase failed — aborting."
-        git rebase --abort
-        git checkout "$original_branch"
+    if ! git rev-parse --verify "$branch" >/dev/null 2>&1; then
+        echo "❌ Branch not found: $branch"
         return 1
-    }
+    fi
+
+    echo "📍 Current branch: $original_branch"
+    if [ "$original_branch" = "$branch" ]; then
+        echo "✅ Already on $branch"
+    else
+        echo "🔁 Checking out branch: $branch"
+        git checkout "$branch" || return 1
+    fi
+
+    # Rebase only if --merge-to-branch is provided
+    if [ -n "$merge_to_branch" ]; then
+        if ! git rev-parse --verify "$merge_to_branch" >/dev/null 2>&1; then
+            echo "❌ Merge-to branch not found: $merge_to_branch"
+            return 1
+        fi
+
+        echo "🧼 Rebasing $branch onto $merge_to_branch..."
+        git rebase "$merge_to_branch" || {
+            echo "❌ Rebase failed — aborting."
+            git rebase --abort
+            git checkout "$original_branch"
+            return 1
+        }
+    else
+        echo "⏩ Skipping rebase (no --merge-to-branch provided)"
+    fi
+
+    local diff_base="${merge_to_branch:-origin/main}"
 
     local timestamp
     timestamp=$(date +"%Y.%m.%d-%H.%M.%S")
 
-    local feature_clean
-    feature_clean=$(echo "$feature_branch" | sed 's/\//-/g')
+    local branch_clean
+    branch_clean=$(echo "$branch" | sed 's/\//-/g')
 
-    local base_clean
-    base_clean=$(echo "$base_branch" | sed 's/\//-/g')
-
-    local filename="${feature_clean}-PR-clean-${timestamp}.diff.txt"
+    local filename="${branch_clean}-PR-clean-${timestamp}.diff.txt"
     local filepath="$HOME/Desktop/${filename}"
 
-    echo "📝 Generating PR-clean diff..."
-    git diff "$base_branch"..HEAD > "$filepath"
+    echo "📝 Generating PR-clean diff against $diff_base..."
+    git diff "$diff_base"..HEAD > "$filepath"
 
     echo "📂 Opening diff in VS Code..."
     code "$filepath"
