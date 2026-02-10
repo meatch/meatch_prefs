@@ -24,6 +24,9 @@ fi
 # Timestamp History Prefix Formatting
 HIST_STAMPS="%Y.%m.%d.%H:%M"
 
+# Clear autosuggestions on paste so they don't overwrite pasted text
+ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(bracketed-paste)
+
 # --------------------------------------------------------------
 # Oh My Zsh Configuration
 # --------------------------------------------------------------
