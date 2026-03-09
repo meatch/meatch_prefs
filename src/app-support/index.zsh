@@ -7,3 +7,6 @@ source "$HOME/meatch_prefs/src/app-support/claude.zsh"
 
 # VS Code 'code' command for opening files/folders from terminal
 export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+
+# Rust/Cargo binaries
+export PATH="$PATH:$HOME/.cargo/bin"
