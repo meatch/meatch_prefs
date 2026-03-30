@@ -15,6 +15,57 @@ function grib() {
     git rebase -i origin/$1
 }
 
+function removeLocalBranches() {
+    # Usage: removeLocalBranches [--omit <branch1,branch2,...>]
+    local omit_branches=()
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --omit)
+                IFS=',' read -rA omit_branches <<< "$2"
+                shift 2
+                ;;
+            *)
+                echo "Unknown option: $1"
+                echo "Usage: removeLocalBranches [--omit <branch1,branch2,...>]"
+                return 1
+                ;;
+        esac
+    done
+
+    local current_branch
+    current_branch=$(git symbolic-ref --short HEAD)
+
+    local branches_to_delete=()
+    while IFS= read -r branch; do
+[[ "$branch" == "$current_branch" ]] && continue
+        local skip=0
+        for omit in "${omit_branches[@]}"; do
+            [[ "$branch" == "$omit" ]] && skip=1 && break
+        done
+        [[ $skip -eq 1 ]] && continue
+        branches_to_delete+=("$branch")
+    done < <(git branch | grep -v '^\*' | sed 's/^[[:space:]]*//')
+
+    if [[ ${#branches_to_delete[@]} -eq 0 ]]; then
+        echo "No branches to delete."
+        return 0
+    fi
+
+    echo "Branches to delete:"
+    for b in "${branches_to_delete[@]}"; do
+        echo "  $b"
+    done
+    echo ""
+    echo -n "Proceed? [y/N] "
+    read -r confirm
+    [[ "$confirm" =~ ^[Yy]$ ]] || { echo "Aborted."; return 0; }
+
+    for b in "${branches_to_delete[@]}"; do
+        git branch -D "$b"
+    done
+}
+
 # Code review helper - generates diff file for Claude Code review
 # Usage: review-branch [--branch <branch>] [--merge-to-branch <branch>]
 # Options:
